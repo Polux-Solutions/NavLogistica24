@@ -15,7 +15,7 @@ namespace NavLogistica24
 {
     public class Soap
     {
-        public async Task<string> Proveedores(mDatos xDatos, mProveedor xProvedor, Int32 xId)
+        public async Task<string> Proveedores(mDatos xDatos, mProveedor xProvedor, Int32 xId, mAlmacenes Almacen)
         {
             Funciones f = new Funciones();
 
@@ -55,8 +55,8 @@ namespace NavLogistica24
                                             </soapenv:Body>
                                             </soapenv:Envelope>");
 
-                f.Guardar_xml(xDatos, "Proveedores", soapEnvelopeXml.InnerXml, "KK");
-                Respuesta = await GetRequest(xDatos, "ProveedorWS", soapEnvelopeXml, "KK");
+                f.Guardar_xml(xDatos, "Proveedores", soapEnvelopeXml.InnerXml, Almacen.Codigo);
+                Respuesta = await GetRequest(xDatos, "ProveedorWS", soapEnvelopeXml, Almacen.URL);
             }
             catch (Exception ex)
             {
@@ -66,7 +66,7 @@ namespace NavLogistica24
             return Respuesta;
         }
 
-        public async Task<string> Articulos(mDatos xDatos, mArticulo xArticulo, Int32 xId)
+        public async Task<string> Articulos(mDatos xDatos, mArticulo xArticulo, Int32 xId, mAlmacenes Almacen)
         {
             Funciones f = new Funciones();
 
@@ -148,8 +148,8 @@ namespace NavLogistica24
 
                     soapEnvelopeXml.LoadXml(xml);
 
-                f.Guardar_xml(xDatos, "Articulos", soapEnvelopeXml.InnerXml, "KK");
-                Respuesta = await GetRequest(xDatos,"ArticuloWS", soapEnvelopeXml, "KK");
+                f.Guardar_xml(xDatos, "Articulos", soapEnvelopeXml.InnerXml, Almacen.Codigo);
+                Respuesta = await GetRequest(xDatos,"ArticuloWS", soapEnvelopeXml, Almacen.URL);
             }
             catch (Exception ex)
             {
@@ -158,7 +158,7 @@ namespace NavLogistica24
             return Respuesta;
         }
 
-        public async Task<string> Codigos_Barras(mDatos xDatos, mCodigoBarras xBarras, Int32 xId)
+        public async Task<string> Codigos_Barras(mDatos xDatos, mCodigoBarras xBarras, Int32 xId, mAlmacenes Almacen)
         {
             Funciones f = new Funciones();
 
@@ -197,8 +197,8 @@ namespace NavLogistica24
                                             </soapenv:Body>
                                             </soapenv:Envelope>");
 
-                f.Guardar_xml(xDatos, "CodigosBarras", soapEnvelopeXml.InnerXml,"KK");
-                Respuesta = await GetRequest(xDatos, "CodigoBarrasWS", soapEnvelopeXml, "KK");
+                f.Guardar_xml(xDatos, "CodigosBarras", soapEnvelopeXml.InnerXml, Almacen.Codigo);
+                Respuesta = await GetRequest(xDatos, "CodigoBarrasWS", soapEnvelopeXml, Almacen.URL);
             }
             catch (Exception ex)
             {
@@ -259,7 +259,7 @@ namespace NavLogistica24
             return Respuesta;
         }
 
-        public async Task<string> OC(mDatos xDatos, mOCCabecera xOC, Int32 xId)
+        public async Task<string> OC(mDatos xDatos, mOCCabecera xOC, Int32 xId, mAlmacenes Almacen)
         {
             Funciones f = new Funciones();
 
@@ -329,8 +329,8 @@ namespace NavLogistica24
 
                 soapEnvelopeXml.LoadXml(xmlPedido);
 
-                f.Guardar_xml(xDatos, "OC", soapEnvelopeXml.InnerXml, "KK");
-                Respuesta = await GetRequest(xDatos, "PedidoEntradaWS", soapEnvelopeXml, "KK");
+                f.Guardar_xml(xDatos, "OC", soapEnvelopeXml.InnerXml, Almacen.Codigo);
+                Respuesta = await GetRequest(xDatos, "PedidoEntradaWS", soapEnvelopeXml, Almacen.URL);
             }
             catch (Exception ex)
             {
@@ -339,7 +339,7 @@ namespace NavLogistica24
             return Respuesta;
         }
 
-        public async Task<string> PS(mDatos xDatos, mPSCabecera xPS, Int32 xId)
+        public async Task<string> PS(mDatos xDatos, mPSCabecera xPS, Int32 xId, mAlmacenes Almacen)
         {
             Funciones f = new Funciones();
 
@@ -417,8 +417,8 @@ namespace NavLogistica24
 
                 soapEnvelopeXml.LoadXml(xmlPedido);
 
-                f.Guardar_xml(xDatos, "PS", soapEnvelopeXml.InnerXml, "KK");
-                Respuesta = await GetRequest(xDatos, "PedidoSalidaWS", soapEnvelopeXml, "KK");
+                f.Guardar_xml(xDatos, "PS", soapEnvelopeXml.InnerXml, Almacen.Codigo);
+                Respuesta = await GetRequest(xDatos, "PedidoSalidaWS", soapEnvelopeXml, Almacen.URL);
             }
             catch (Exception ex)
             {
@@ -427,7 +427,7 @@ namespace NavLogistica24
             return Respuesta;
         }
 
-        public async Task<string> DevPro(mDatos xDatos, mDevProCabecera xDevol, Int32 xId)
+        public async Task<string> DevPro(mDatos xDatos, mDevProCabecera xDevol, Int32 xId, mAlmacenes Almacen)
         {
             Funciones f = new Funciones();
 
@@ -493,8 +493,8 @@ namespace NavLogistica24
 
                 soapEnvelopeXml.LoadXml(xmlPedido);
 
-                f.Guardar_xml(xDatos, "DevPro", soapEnvelopeXml.InnerXml, "KK");
-                Respuesta = await GetRequest(xDatos, "DevolucionProveedorWS", soapEnvelopeXml, "KK");
+                f.Guardar_xml(xDatos, "DevPro", soapEnvelopeXml.InnerXml, Almacen.Codigo);
+                Respuesta = await GetRequest(xDatos, "DevolucionProveedorWS", soapEnvelopeXml, Almacen.URL);
             }
             catch (Exception ex)
             {

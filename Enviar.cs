@@ -15,12 +15,13 @@ namespace NavLogistica24
 {
     public class Enviar
     {
-        /*
-        public async Task <mDatos> Proveedores(mDatos Datos)
+        
+        public async Task <mDatos> Proveedores(mDatos Datos, ObservableCollection<mAlmacenes> Almacenes)
         {
             Sql Sqlclass = new Sql();
             SqlDataReader oRead = null;
             Int32 InlogID = Inlog_Id(Datos, ref Sqlclass);
+            ObservableCollection<mProveedor> Proveedores = new ObservableCollection<mProveedor>();
 
             String tt = $@"SELECT VE.[No_], VE.[Name], VE.[Search Name], VE.[Address], VE.[Country_Region Code], CU.[Name], 
                                   VE.[City], VE.[County], VE.[Post Code], VE.[Fax No_], VE.[Phone No_], VE.[Contact] 
@@ -37,15 +38,12 @@ namespace NavLogistica24
             {
                 if (oRead.HasRows)
                 {
-                    mProveedor Proveedor;
-                    Soap WebServices = new Soap();
-
                     while (oRead.Read())
                     {
                         InlogID++;
-                        string Error = "";
-                        Proveedor = new mProveedor();
+                        mProveedor Proveedor = new mProveedor();
 
+                        Proveedor.OK = true;
                         Proveedor.accion = "A";
                         Proveedor.codext = oRead.GetString(0);
                         //Proveedor.codigo = oRead.GetString(0);
@@ -61,8 +59,7 @@ namespace NavLogistica24
                         Proveedor.telefo = oRead.GetString(10);
                         Proveedor.fecha = DateTime.Now.ToString("yyyyMMddHHmmss");
 
-                        if (Proveedor.codext.Length > 15) Error = "El código del proveedor (codext) supera los 15 carácteres";
-                        //if (Proveedor.codigo.Length > 6) Error = "El código del proveedor (codigo) supera los 6 carácteres";
+                        if (Proveedor.codext.Length > 15) Proveedor.NOK(ref Proveedor, "El código del proveedor (codext) supera los 15 carácteres");
 
                         if (Proveedor.nombre.Length > 40) Proveedor.nombre = Proveedor.nombre.Substring(0, 40);
                         if (Proveedor.codpais.Length > 40) Proveedor.codpais = Proveedor.codpais.Substring(0, 40);
@@ -71,7 +68,7 @@ namespace NavLogistica24
                         if (Proveedor.razsoc.Length > 40) Proveedor.razsoc = Proveedor.razsoc.Substring(0, 40);
                         if (Proveedor.telefo.Length > 40) Proveedor.telefo = Proveedor.telefo.Substring(0, 40);
                         if (Proveedor.direcc.Length > 40) Proveedor.direcc = Proveedor.direcc.Substring(0, 40);
-                        if (Proveedor.codpos.Length > 5) Proveedor.codpos = Proveedor.codpos.Substring(0,5);
+                        if (Proveedor.codpos.Length > 5) Proveedor.codpos = Proveedor.codpos.Substring(0, 5);
                         if (Proveedor.nomcto.Length > 15) Proveedor.nomcto = Proveedor.nomcto.Substring(0, 15);
                         if (Proveedor.numfax.Length > 15) Proveedor.numfax = Proveedor.numfax.Substring(0, 14);
                         if (string.IsNullOrEmpty(Proveedor.numfax)) Proveedor.numfax = "0";
@@ -80,30 +77,49 @@ namespace NavLogistica24
                         Proveedor.numfax = Numeros_Telefono(Proveedor.numfax, 14);
                         Proveedor.telefo = Numeros_Telefono(Proveedor.telefo, 14);
 
-                        String Respuesta = "";
-                        if (Error == "")
+                        Proveedores.Add(Proveedor);
+
+                        Actualizar_Proveedor(Datos, ref Sqlclass, Proveedor.codext);
+                    }
+                }
+                oRead.Close();
+
+                String Respuesta = "";
+
+                Soap WebServices = new Soap();
+                bool PrimerAlmacen = true;
+
+                foreach (mAlmacenes Almacen in Almacenes)
+                {
+                    foreach (mProveedor Proveedor in Proveedores)
+                    {
+                        if (Proveedor.OK)
                         {
-                            Respuesta = await WebServices.Proveedores(Datos, Proveedor, InlogID);
+                            Respuesta = await WebServices.Proveedores(Datos, Proveedor, InlogID, Almacen);
                         }
                         else
                         {
-                            Respuesta = Error;
+                            Respuesta = Proveedor.Error;
                         }
-                        Actualizar_Proveedor(Datos, ref Sqlclass, Proveedor.codext);
-                        InLog(ref Datos, ref Sqlclass, 0, Proveedor.codext, 0, Proveedor.nombre, Respuesta, InlogID);
-                        Datos.Counter++;
+                        InLog(ref Datos, ref Sqlclass, 0, Proveedor.codext, 0, Proveedor.nombre, Respuesta, InlogID, Almacen.Codigo);
+
+                        if (PrimerAlmacen) Datos.Counter++;
                     }
+
+                    if (PrimerAlmacen) PrimerAlmacen = false;
                 }
             }
 
             return Datos;
         }
 
-        public async Task<mDatos> Articulos(mDatos Datos)
+        
+        public async Task<mDatos> Articulos(mDatos Datos, ObservableCollection<mAlmacenes> Almacenes)
         {
             Sql Sqlclass = new Sql();
             SqlDataReader oRead = null;
             Int32 InlogID = Inlog_Id(Datos, ref Sqlclass);
+            ObservableCollection<mArticulo>Articulos = new ObservableCollection<mArticulo>();
 
             String tt = $@"SELECT ART.[No_], ART.[Descripción ampliada], ART.[Cajas_Pale], ART.[Caducidad], ART.[Visado], ART.[Kilos_caja], 
                                   ART.[Sacos_Caja], ART.[Tip_ producto], IT.[Muestras], IT.[Es Lata], COALESCE(UOM.[Qty_ per Unit of Measure],0) 
@@ -122,7 +138,7 @@ namespace NavLogistica24
                     {
                         InlogID++;
                         Actualizar_Articulos(Datos, ref Sqlclass, oRead.GetString(0));
-                        InLog(ref Datos, ref Sqlclass, 1, oRead.GetString(0), 0, oRead.GetString(1), "Artículo bloqueado, no se envía a Inlog", InlogID);
+                        InLog(ref Datos, ref Sqlclass, 1, oRead.GetString(0), 0, oRead.GetString(1), "Artículo bloqueado, no se envía a Inlog", InlogID, "");
                     }
                 } 
                 
@@ -146,7 +162,7 @@ namespace NavLogistica24
                     while (oRead.Read())
                     {
                         InlogID++;
-                        InLog(ref Datos, ref Sqlclass, 1, oRead.GetString(0), 0, oRead.GetString(1), "Error en cantidad en Cajas_Pale o Kilos_Caja o Sacos_Caja", InlogID);
+                        InLog(ref Datos, ref Sqlclass, 1, oRead.GetString(0), 0, oRead.GetString(1), "Error en cantidad en Cajas_Pale o Kilos_Caja o Sacos_Caja", InlogID, "");
                     }
                 }
 
@@ -170,18 +186,18 @@ namespace NavLogistica24
             {
                 if (oRead.HasRows)
                 {
-                    mArticulo Articulo;
-                    Soap WebServices = new Soap();
 
                     while (oRead.Read())
                     {
-                        string Error = "";
+                        mArticulo Articulo = new mArticulo();
+
                         InlogID++;
 
                         Articulo = new mArticulo();
 
+                        Articulo.OK = true;
                         Articulo.accion = "A";
-                        Articulo.almace = "0"; 
+                        Articulo.almace = "0";
                         Articulo.altcaj = "1";
                         Articulo.altpal = "01";
                         Articulo.anccaj = "1";
@@ -191,7 +207,7 @@ namespace NavLogistica24
                         Articulo.artpv2 = "0";
                         Articulo.artpvl = "0";
                         Articulo.caddev = "N";
-                        Articulo.cajpal = oRead.GetDecimal(2).ToString("##0"); 
+                        Articulo.cajpal = oRead.GetDecimal(2).ToString("##0");
                         Articulo.capkud = "0";
                         Articulo.claabc = "A";
                         Articulo.codigo = "";
@@ -219,7 +235,7 @@ namespace NavLogistica24
                         Articulo.inpesa = "N";
                         Articulo.insren = "N";
                         Articulo.insrsa = "N";
-                        Articulo.larcaj = "1"; 
+                        Articulo.larcaj = "1";
                         Articulo.loseob = "N";
                         Articulo.loteob = "S";
                         Articulo.lotpic = "N";
@@ -227,12 +243,12 @@ namespace NavLogistica24
                         Articulo.manpal = "01";
                         Articulo.nsrlon = "0";
                         Articulo.percua = "0";
-                        Articulo.pescaj = decimal.ToInt32(oRead.GetDecimal(5) * 1000).ToString("##0"); 
+                        Articulo.pescaj = decimal.ToInt32(oRead.GetDecimal(5) * 1000).ToString("##0");
                         Articulo.pesvar = "N";
                         Articulo.prohab = "0";
                         Articulo.propie = "0";
-                        Articulo.rkigun = "1"; 
-                        Articulo.sitart = "AL"; 
+                        Articulo.rkigun = "1";
+                        Articulo.sitart = "AL";
                         Articulo.tipart = "N";
                         Articulo.tipent = "D";
                         Articulo.tipeti = "01";
@@ -240,7 +256,7 @@ namespace NavLogistica24
                         Articulo.tippal = "01";
                         Articulo.tolera = "0";
                         Articulo.unicaj = decimal.ToInt32(oRead.GetDecimal(6)).ToString("##0");
-                        Articulo.unidns = "N"; 
+                        Articulo.unidns = "N";
                         Articulo.unimed = "K";
                         Articulo.valdec = "0";
                         Articulo.varlog = "";
@@ -269,37 +285,56 @@ namespace NavLogistica24
                             Decimal PesoUD = 0;
 
                             if (oRead.GetDecimal(10) != 0) PesoUD = 1 / oRead.GetDecimal(10);
-                            Articulo.pescaj = decimal.ToInt32(oRead.GetDecimal(5) * 1000 * PesoUD ).ToString("##0");
+                            Articulo.pescaj = decimal.ToInt32(oRead.GetDecimal(5) * 1000 * PesoUD).ToString("##0");
                         }
 
 
-                            if (Articulo.denomi.Length > 40) Articulo.denomi = Articulo.denomi.Substring(0, 40);
-                        String Respuesta = "";
-                        if (Error == "")
-                        {
-                            Respuesta = await WebServices.Articulos(Datos, Articulo, InlogID);
-                        }
-                        else
-                        {
-                            Respuesta = Error;
-                        }
+                        if (Articulo.denomi.Length > 40) Articulo.denomi = Articulo.denomi.Substring(0, 40);
+
+                        Articulos.Add(Articulo);
+
                         Actualizar_Articulos(Datos, ref Sqlclass, Articulo.artpro);
-                        InLog(ref Datos, ref Sqlclass, 1, Articulo.artpro, 0, Articulo.denomi, Respuesta, InlogID);
-                        Datos.Counter++;
                     }
                 }
 
                 oRead.Close();
+
+
+                String Respuesta = string.Empty;
+                Soap WebServices = new Soap();
+                bool PrimerAlmacen = true;
+
+                foreach (mAlmacenes Almacen in Almacenes)
+                {
+                    foreach (mArticulo Articulo in Articulos)
+                    {
+                        if (Articulo.OK)
+                        {
+                            Respuesta = await WebServices.Articulos(Datos, Articulo, InlogID, Almacen);
+                        }
+                        else
+                        {
+                            Respuesta = Articulo.Error;
+                        }
+                        InLog(ref Datos, ref Sqlclass, 0, Articulo.artpro, 0, Articulo.denomi, Respuesta, InlogID, Almacen.Codigo);
+
+                        if (PrimerAlmacen) Datos.Counter++;
+                    }
+
+                    if (PrimerAlmacen) PrimerAlmacen = false;
+                }
+
             }
 
             return Datos;
         }
 
-        public async Task<mDatos> CodigosBarras(mDatos Datos)
+        public async Task<mDatos> CodigosBarras(mDatos Datos, ObservableCollection<mAlmacenes> Almacenes)
         {
             Sql Sqlclass = new Sql();
             SqlDataReader oRead = null;
             Int32 InlogID = Inlog_Id(Datos, ref Sqlclass);
+            ObservableCollection<mCodigoBarras>CodBars = new ObservableCollection<mCodigoBarras>();
 
             String tt = $@"SELECT ART.[No_], ART.[Sacos_Caja], ART.[Var_logistica], ART.[DUN14]
                              FROM[{Datos.Company}$Articulos] ART
@@ -318,12 +353,8 @@ namespace NavLogistica24
             {
                 if (oRead.HasRows)
                 {
-                    mCodigoBarras CodBar;
-                    Soap WebServices = new Soap();
-
                     while (oRead.Read())
                     {
-                        string Error = "";
                         InlogID++;
 
                         string ean = "";
@@ -331,12 +362,14 @@ namespace NavLogistica24
 
                         for (int i = 1; i <= 2; i++)
                         {
-                            if (i==1) // EAN13
+                            mCodigoBarras CodBar = new mCodigoBarras();
+
+                            if (i == 1) // EAN13
                             {
                                 ean = oRead.GetString(2);
                                 tipo = "EAN13";
                             }
-                            if (i==2) // DUN14
+                            if (i == 2) // DUN14
                             {
                                 ean = oRead.GetString(3);
                                 tipo = "DUN14";
@@ -346,8 +379,7 @@ namespace NavLogistica24
 
                             if (ean != "")
                             {
-                                CodBar = new mCodigoBarras();
-
+                                CodBar.OK = true;
                                 CodBar.accion = "A";
                                 CodBar.almace = "0";
                                 CodBar.artpro = oRead.GetString(0);
@@ -356,8 +388,8 @@ namespace NavLogistica24
                                 CodBar.artpvl = "0";
                                 CodBar.propie = "0";
                                 CodBar.codbar = ean;
-                                CodBar.tipcod = tipo; 
-                                
+                                CodBar.tipcod = tipo;
+
                                 if (decimal.ToInt32(oRead.GetDecimal(1)) == 0)
                                 {
                                     CodBar.unicaj = "1";
@@ -370,28 +402,46 @@ namespace NavLogistica24
                                 CodBar.fecha = DateTime.Now.ToString("yyyyMMddHHmmss");
                                 CodBar.fecalt = DateTime.Now.ToString("yyyyMMddHHmmss");
 
-                                String Respuesta = "";
-                                if (Error == "")
-                                {
-                                    Respuesta = await WebServices.Codigos_Barras(Datos, CodBar, InlogID);
-                                }
-                                else
-                                {
-                                    Respuesta = Error;
-                                }
-                                InLog(ref Datos, ref Sqlclass, 2, CodBar.artpro, 0, ean, Respuesta, InlogID);
+                                CodBars.Add(CodBar);
                             }
+
+                            Actualizar_CodBar(Datos, ref Sqlclass, oRead.GetString(0));
+
                         }
-                        Actualizar_CodBar(Datos, ref Sqlclass, oRead.GetString(0));
-                        
-                        Datos.Counter++;
+
                     }
+                }
+
+                oRead.Close();
+
+                String Respuesta = string.Empty;
+                Soap WebServices = new Soap();
+                bool PrimerAlmacen = true;
+
+                foreach (mAlmacenes Almacen in Almacenes)
+                {
+                    foreach (mCodigoBarras CodBar in CodBars)
+                    {
+                        if (CodBar.OK)
+                        {
+                            Respuesta = await WebServices.Codigos_Barras(Datos, CodBar, InlogID, Almacen);
+                        }
+                        else
+                        {
+                            Respuesta = CodBar.Error;
+                        }
+                        InLog(ref Datos, ref Sqlclass, 2, CodBar.artpro, 0, CodBar.codbar, Respuesta, InlogID, Almacen.Codigo);
+
+                        if (PrimerAlmacen) Datos.Counter++;
+                    }
+
+                    if (PrimerAlmacen) PrimerAlmacen = false;
                 }
             }
 
             return Datos;
         }
-        */
+
         public async Task<mDatos> Clientes(mDatos Datos, ObservableCollection<mAlmacenes> Almacenes)
         {
             Sql Sqlclass = new Sql();
@@ -474,7 +524,7 @@ namespace NavLogistica24
                             Respuesta = Cliente.Error;
                         }
 
-                        InLog(ref Datos, ref Sqlclass, 3, Cliente.codext, 0, Cliente.nombre, Respuesta, InlogID, string.Empty);
+                        InLog(ref Datos, ref Sqlclass, 3, Cliente.codext, 0, Cliente.nombre, Respuesta, InlogID, Almacen.Codigo);
 
                         if (PrimerAlmacen) Datos.Counter++;
                     }
@@ -486,8 +536,8 @@ namespace NavLogistica24
             return Datos;
         }
 
-        /*
-        public async Task<mDatos> OC(mDatos Datos)
+        
+        public async Task<mDatos> OC(mDatos Datos, mAlmacenes Almacen)
         {
             Sql Sqlclass = new Sql();
             SqlDataReader oRead = null;
@@ -503,7 +553,7 @@ namespace NavLogistica24
                               and OC.[Enviar a InLog] = 1
                               and OL.[Type] = 2
                               and OL.[Outstanding Quantity] > 0
-                              and OL.[Location Code] = (Select [Almacen SGA] from [{Datos.Company}$Warehouse Setup])
+                              and OL.[Location Code] = '{Almacen.Codigo}'
                              group by OC.[No_], OC.[Buy-from Vendor No_], OC.[Order Date], OC.[Tipo de pedido]
                              having Count(*) >= 1
                              order by OC.[No_]";
@@ -545,7 +595,7 @@ namespace NavLogistica24
                                       and OL.[Document No_] = '{Cabecera.pedext}' 
                                       and OL.[Type] = 2
                                       and OL.[Outstanding Quantity] > 0
-                                      and OL.[Location Code] = (Select [Almacen SGA] from [{Datos.Company}$Warehouse Setup])
+                                      and OL.[Location Code] = '{Almacen.Codigo}'
                                      order by OL.[Line No_]";
 
 
@@ -595,10 +645,10 @@ namespace NavLogistica24
                             oRead2.Close();
                         }
 
-                        String Respuesta = await WebServices.OC(Datos, Cabecera, InlogID);
+                        String Respuesta = await WebServices.OC(Datos, Cabecera, InlogID, Almacen);
 
                         Actualizar_Compras(Datos, ref Sqlclass, 1,Cabecera.pedext);
-                        InLog(ref Datos, ref Sqlclass, 4, Cabecera.pedext, 0, Cabecera.proext, Respuesta, InlogID);
+                        InLog(ref Datos, ref Sqlclass, 4, Cabecera.pedext, 0, Cabecera.proext, Respuesta, InlogID, Almacen.Codigo);
                         Datos.Counter++;
                     }
                 }
@@ -607,7 +657,8 @@ namespace NavLogistica24
             return Datos;
         }
 
-        public async Task<mDatos> Transfer_Entrada(mDatos Datos)
+        
+        public async Task<mDatos> Transfer_Entrada(mDatos Datos,mAlmacenes Almacen)
         {
             Sql Sqlclass = new Sql();
             SqlDataReader oRead = null;
@@ -619,7 +670,7 @@ namespace NavLogistica24
                              inner join [{Datos.Company}$Transfer Line] TL on TL.[Document No_] = TH.[No_]
                              inner join [{Datos.Company}$Location] ALM on ALM.[Code] = TH.[Transfer-from Code]
                              inner join [{Datos.Company}$Vendor] VE on VE.[No_] = ALM.[Proveedor]
-                             where TH.[Transfer-to Code] = (Select [Almacen SGA] from [{Datos.Company}$Warehouse Setup])
+                             where TH.[Transfer-to Code] = '{Almacen.Codigo}'
                                and TH.[Enviar a InLog] = 1
                                and TL.[Nº envases] >0
                             group by TH.[No_], VE.[No_], TH.[Shipment Date]
@@ -707,10 +758,10 @@ namespace NavLogistica24
                             oRead2.Close();
                         }
 
-                        String Respuesta = await WebServices.OC(Datos, Cabecera, InlogID);
+                        String Respuesta = await WebServices.OC(Datos, Cabecera, InlogID, Almacen);
 
                         Actualizar_Transferencia(Datos, ref Sqlclass,  Cabecera.pedext);
-                        InLog(ref Datos, ref Sqlclass, 8, Cabecera.pedext, 0, Cabecera.proext, Respuesta, InlogID);
+                        InLog(ref Datos, ref Sqlclass, 8, Cabecera.pedext, 0, Cabecera.proext, Respuesta, InlogID, Almacen.Codigo);
                         Datos.Counter++;
                     }
                 }
@@ -719,7 +770,7 @@ namespace NavLogistica24
             return Datos;
         }
 
-        public async Task<mDatos> PS(mDatos Datos)
+        public async Task<mDatos> PS(mDatos Datos, mAlmacenes Almacen)
         {
             Sql Sqlclass = new Sql();
             SqlDataReader oRead = null;
@@ -739,7 +790,7 @@ namespace NavLogistica24
                               and PS.[Enviar a InLog] = 1
                               and PL.[Type] = 2
                               and PL.[Outstanding Quantity] > 0
-                              and PL.[Location Code] = (Select [Almacen SGA] from [{Datos.Company}$Warehouse Setup])
+                              and PL.[Location Code] = '{Almacen.Codigo}'
                              group by PS.[No_], PS.[Sell-to Customer No_], PS.[Order Date],
                                      PS.[Ship-to Code], PS.[Ship-to Name], PS.[Ship-to Name 2], PS.[Ship-to Address], PS.[Ship-to Address 2],
                                      PS.[Ship-to City], PS.[Ship-to Post Code], PS.[Ship-to County], PS.[Ship-to Country_Region Code], PS.[Ship-to Phone No_],
@@ -800,7 +851,7 @@ namespace NavLogistica24
                                       and PL.[Document No_] = '{Cabecera.pedext}' 
                                       and PL.[Type] = 2
                                       and PL.[Outstanding Quantity] > 0
-                                      and PL.[Location Code] = (Select [Almacen SGA] from [{Datos.Company}$Warehouse Setup])
+                                      and PL.[Location Code] = '{Almacen.Codigo}'
                                      order by PL.[Line No_]";
 
                         bool Abrir2 = Sqlclass.Crear_Datareader(ref Datos, ref oRead2, tt2);
@@ -843,10 +894,10 @@ namespace NavLogistica24
                             oRead2.Close();
                         }
 
-                        String Respuesta = await WebServices.PS(Datos, Cabecera, InlogID);
+                        String Respuesta = await WebServices.PS(Datos, Cabecera, InlogID, Almacen);
 
                         Actualizar_PS(Datos, ref Sqlclass, Cabecera.pedext);
-                        InLog(ref Datos, ref Sqlclass, 5, Cabecera.pedext, 0, Cabecera.pedext, Respuesta, InlogID);
+                        InLog(ref Datos, ref Sqlclass, 5, Cabecera.pedext, 0, Cabecera.pedext, Respuesta, InlogID, Almacen.Codigo);
                         Datos.Counter++;
                     }
                 }
@@ -855,7 +906,7 @@ namespace NavLogistica24
             return Datos;
         }
 
-        public async Task<mDatos> Transfer_Salida(mDatos Datos)
+        public async Task<mDatos> Transfer_Salida(mDatos Datos, mAlmacenes Almacen)
         {
             Sql Sqlclass = new Sql();
             SqlDataReader oRead = null;
@@ -872,7 +923,7 @@ namespace NavLogistica24
                              inner join [{Datos.Company}$Location] ALM on ALM.[Code] = TH.[Transfer-to Code]
                              inner join [{Datos.Company}$Customer] CU on CU.[No_] = ALM.[Cliente]
                              Cross join [{Datos.Company}$Sales & Receivables Setup] SSE
-                             where TH.[Transfer-from Code] = (Select [Almacen SGA] from [{Datos.Company}$Warehouse Setup])
+                             where TH.[Transfer-from Code] = '{Almacen.Codigo}'
                                and TH.[Enviar a InLog] = 1
                                and TL.[Nº envases] >0
                             group by TH.[No_], CU.[No_], TH.[Shipment Date],
@@ -973,10 +1024,10 @@ namespace NavLogistica24
                             oRead2.Close();
                         }
 
-                        String Respuesta = await WebServices.PS(Datos, Cabecera, InlogID);
+                        String Respuesta = await WebServices.PS(Datos, Cabecera, InlogID, Almacen);
 
                         Actualizar_Transferencia(Datos, ref Sqlclass, Cabecera.pedext);
-                        InLog(ref Datos, ref Sqlclass, 9, Cabecera.pedext, 0, Cabecera.pedext, Respuesta, InlogID);
+                        InLog(ref Datos, ref Sqlclass, 9, Cabecera.pedext, 0, Cabecera.pedext, Respuesta, InlogID, Almacen.Codigo);
                         Datos.Counter++;
                     }
                 }
@@ -985,7 +1036,7 @@ namespace NavLogistica24
             return Datos;
         }
 
-        public async Task<mDatos> DevPro(mDatos Datos)
+        public async Task<mDatos> DevPro(mDatos Datos, mAlmacenes Almacen)
         {
             Sql Sqlclass = new Sql();
             SqlDataReader oRead = null;
@@ -1001,7 +1052,7 @@ namespace NavLogistica24
                               and OC.[Enviar a InLog] = 1
                               and OL.[Type] = 2
                               and OL.[Outstanding Quantity] < 0
-                              and OL.[Location Code] = (Select [Almacen SGA] from [{Datos.Company}$Warehouse Setup])
+                              and OL.[Location Code] = '{Almacen.Codigo}'
                              group by OC.[No_], OC.[Buy-from Vendor No_], OC.[Order Date], OC.[Tipo de pedido]
                              having Count(*) >= 1
                              order by OC.[No_]";
@@ -1041,7 +1092,7 @@ namespace NavLogistica24
                                       and OL.[Document No_] = '{Cabecera.codext}' 
                                       and OL.[Type] = 2
                                       and OL.[Outstanding Quantity] < 0
-                                      and OL.[Location Code] = (Select [Almacen SGA] from [{Datos.Company}$Warehouse Setup])
+                                      and OL.[Location Code] = '{Almacen.Codigo}'
                                      order by OL.[Line No_]";
 
                         bool Abrir2 = Sqlclass.Crear_Datareader(ref Datos, ref oRead2, tt2);
@@ -1088,10 +1139,10 @@ namespace NavLogistica24
                             oRead2.Close();
                         }
 
-                        String Respuesta = await WebServices.DevPro(Datos, Cabecera, InlogID);
+                        String Respuesta = await WebServices.DevPro(Datos, Cabecera, InlogID, Almacen);
 
                         Actualizar_Compras(Datos, ref Sqlclass, 1,Cabecera.codext);
-                        InLog(ref Datos, ref Sqlclass, 6, Cabecera.codext, 0, Cabecera.proext, Respuesta, InlogID);
+                        InLog(ref Datos, ref Sqlclass, 6, Cabecera.codext, 0, Cabecera.proext, Respuesta, InlogID, Almacen.Codigo);
                         Datos.Counter++;
                     }
                 }
@@ -1100,7 +1151,7 @@ namespace NavLogistica24
             return Datos;
         }
 
-        public async Task<mDatos> DevCli(mDatos Datos)
+        public async Task<mDatos> DevCli(mDatos Datos,mAlmacenes Almacen)
         {
             Sql Sqlclass = new Sql();
             SqlDataReader oRead = null;
@@ -1116,7 +1167,7 @@ namespace NavLogistica24
                               and OC.[Enviar a InLog] = 1
                               and OL.[Type] = 2
                               and OL.[Outstanding Quantity] < 0
-                              and OL.[Location Code] = (Select [Almacen SGA] from [{Datos.Company}$Warehouse Setup])
+                              and OL.[Location Code] = '{Almacen.Codigo}'
                              group by OC.[No_], OC.[Buy-from Vendor No_], OC.[Order Date], OC.[Tipo de pedido]
                              having Count(*) >= 1
                              order by OC.[No_]";
@@ -1156,7 +1207,7 @@ namespace NavLogistica24
                                       and OL.[Document No_] = '{Cabecera.codext}' 
                                       and OL.[Type] = 2
                                       and OL.[Outstanding Quantity] < 0
-                                      and OL.[Location Code] = (Select [Almacen SGA] from [{Datos.Company}$Warehouse Setup])
+                                      and OL.[Location Code] = '{Almacen.Codigo}'
                                      order by OL.[Line No_]";
 
                         bool Abrir2 = Sqlclass.Crear_Datareader(ref Datos, ref oRead2, tt2);
@@ -1203,10 +1254,10 @@ namespace NavLogistica24
                             oRead2.Close();
                         }
 
-                        String Respuesta = await WebServices.DevPro(Datos, Cabecera, InlogID);
+                        String Respuesta = await WebServices.DevPro(Datos, Cabecera, InlogID, Almacen);
 
                         Actualizar_Compras(Datos, ref Sqlclass, 1,Cabecera.codext);
-                        InLog(ref Datos, ref Sqlclass, 6, Cabecera.codext, 0, Cabecera.proext, Respuesta, InlogID);
+                        InLog(ref Datos, ref Sqlclass, 6, Cabecera.codext, 0, Cabecera.proext, Respuesta, InlogID, Almacen.Codigo);
                         Datos.Counter++;
                     }
                 }
@@ -1214,7 +1265,7 @@ namespace NavLogistica24
 
             return Datos;
         }
-        */
+     
 
         private void InLog(ref mDatos Datos, ref Sql Sqlclass,  int xTipo, string xDocumentoNo, int xLineNo, string xDescription, string xRespuesta, Int32 xId, string xAlmacen)
         {

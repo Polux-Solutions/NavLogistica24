@@ -24,5 +24,13 @@ namespace NavLogistica24.Modelos
         public String varia1 { get; set; }
         public String varia2 { get; set; }
         public String varlog { get; set; }
+        public bool OK { get; set; }
+        public String Error { get; set; }
+
+        public void NOK(ref mCodigoBarras CodBar, string TextoError)
+        {
+            CodBar.OK = false;
+            CodBar.Error = TextoError;
+        }
     }
 }

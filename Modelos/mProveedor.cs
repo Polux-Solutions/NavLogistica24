@@ -22,5 +22,13 @@ namespace NavLogistica24.Modelos
         public String provin { get; set; }
         public String razsoc { get; set; }
         public String telefo { get; set; }
+        public bool OK { get; set; }
+        public String Error { get; set; }
+
+        public void NOK(ref mProveedor Proveedor, string TextoError)
+        {
+            Proveedor.OK = false;
+            Proveedor.Error = TextoError;
+        }
     }
 }

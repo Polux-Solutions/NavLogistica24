@@ -98,5 +98,13 @@ namespace NavLogistica24.Modelos
         public String vlogsu { get; set; }
         public String vloofe { get; set; }
         public String volcaj { get; set; }
+        public bool OK { get; set; }
+        public String Error { get; set; }
+
+        public void NOK(ref mArticulo Articulo, string TextoError)
+        {
+            Articulo.OK = false;
+            Articulo.Error = TextoError;
+        }
     }
 }

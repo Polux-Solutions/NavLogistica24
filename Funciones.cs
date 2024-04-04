@@ -97,7 +97,7 @@ namespace NavLogistica24
         }
 
 
-        public Boolean Log(mDatos Datos, String Texto)
+        public Boolean Log(mDatos Datos, string xAlmacen, String Texto)
         {
             Boolean OK = true;
             System.IO.StreamWriter sr;
@@ -105,7 +105,7 @@ namespace NavLogistica24
             try
             {
                 sr = new System.IO.StreamWriter($@"{Datos.Folder}\{Datos.Log}", true);
-                sr.WriteLine($@"{Datos.Version}  {DateTime.Now.ToString("dd.MM.yy HH:mm:ss")}   {Texto}");
+                sr.WriteLine($@"{Datos.Version}  {DateTime.Now.ToString("dd.MM.yy HH:mm:ss")} {xAlmacen}  {Texto}");
                 sr.Close();
             }
             catch (Exception ex)
@@ -136,7 +136,7 @@ namespace NavLogistica24
             catch (Exception ex)
             {
                 OK = false;
-                f.Log(Datos, $@"Error Grabar xml: {ex.Message}");
+                f.Log(Datos, AlmacenCode, $@"Error Grabar xml: {ex.Message}");
                 LastError = $@"Error Grabar xml: {ex.Message}";
             }
 
@@ -206,7 +206,7 @@ namespace NavLogistica24
                     catch (Exception ex)
                     {
                         OK = false;
-                        Log(Datos, $@"Error Conversión Articulo {ex.Message}");
+                        Log(Datos, "",  $@"Error Conversión Articulo {ex.Message}");
                     }
                 }
             }
