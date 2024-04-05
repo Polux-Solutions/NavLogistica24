@@ -501,6 +501,7 @@ namespace NavLogistica24
                         if (Cliente.codpos == "") Cliente.codpos = "00000";
 
                         Clientes.Add(Cliente);
+                        Actualizar_Cliente(Datos, ref Sqlclass, Cliente.codext);
                     }
                 }
                     
@@ -508,11 +509,11 @@ namespace NavLogistica24
 
                 String Respuesta = "";
 
-                    Soap WebServices = new Soap();
-                    bool PrimerAlmacen = true;
+                Soap WebServices = new Soap();
+                bool PrimerAlmacen = true;
 
-                    foreach (mAlmacenes Almacen in Almacenes)
-                    {
+                foreach (mAlmacenes Almacen in Almacenes)
+                {
                     foreach (mCliente Cliente in Clientes)
                     {
                         if (Cliente.OK)
