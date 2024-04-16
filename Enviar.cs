@@ -299,7 +299,6 @@ namespace NavLogistica24
 
                 oRead.Close();
 
-
                 String Respuesta = string.Empty;
                 Soap WebServices = new Soap();
                 bool PrimerAlmacen = true;
@@ -838,6 +837,7 @@ namespace NavLogistica24
                         Cabecera.telefo = oRead.GetString(12);
                         Cabecera.tipped = "PV";
                         Cabecera.lotsec = "";
+                        Cabecera.numexp = "1";
 
                         string ClienteEComm = oRead.GetString(13);
                         if (ClienteEComm.ToUpper() == Cabecera.cliext.ToUpper()) Cabecera.lotsec = "ECOMMERCE";

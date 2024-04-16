@@ -50,6 +50,7 @@ namespace NavLogistica24.Modelos
         public String tipagr { get; set; }
         public String tipped { get; set; }
         public String volped { get; set; }
+        public String numexp { get; set; }
 
         public ObservableCollection<mPSLineas> Lineas { get; set; }
     }

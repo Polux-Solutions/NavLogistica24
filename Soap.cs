@@ -405,6 +405,8 @@ namespace NavLogistica24
                                     <sitped xsi:type=""soapenc:string"">{xPS.sitped}</sitped>
                                     <telefo xsi:type=""soapenc:string"">{xPS.telefo}</telefo>
                                     <tipped xsi:type=""soapenc:string"">{xPS.tipped}</tipped>
+                                    <numexp xsi:type=""soapenc:string"">{xPS.numexp}</numexp>
+
                                 </in1>
                                 <in2 xsi:type=""bean:ArrayOfLineaPedidoSalida"" soapenc:arrayType=""bean:LineaPedidoSalida[1]"" xmlns:bean=""http://beans.webservice.inlogconsulting.com.es"">
                                 {xmlLineas}    
