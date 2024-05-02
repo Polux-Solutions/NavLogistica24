@@ -309,20 +309,20 @@ namespace NavLogistica24
                     {
                         if (Articulo.OK)
                         {
+                            Articulo.almace = Almacen.CodigoExterno;
                             Respuesta = await WebServices.Articulos(Datos, Articulo, InlogID, Almacen);
                         }
                         else
                         {
                             Respuesta = Articulo.Error;
                         }
-                        InLog(ref Datos, ref Sqlclass, 0, Articulo.artpro, 0, Articulo.denomi, Respuesta, InlogID, Almacen.Codigo);
+                        InLog(ref Datos, ref Sqlclass, 1, Articulo.artpro, 0, Articulo.denomi, Respuesta, InlogID, Almacen.Codigo);
 
                         if (PrimerAlmacen) Datos.Counter++;
                     }
 
                     if (PrimerAlmacen) PrimerAlmacen = false;
                 }
-
             }
 
             return Datos;
@@ -423,6 +423,7 @@ namespace NavLogistica24
                     {
                         if (CodBar.OK)
                         {
+                            CodBar.almace = Almacen.CodigoExterno;
                             Respuesta = await WebServices.Codigos_Barras(Datos, CodBar, InlogID, Almacen);
                         }
                         else
@@ -576,7 +577,7 @@ namespace NavLogistica24
 
                         Cabecera = new mOCCabecera();
                         Cabecera.accion = "A";
-                        Cabecera.almace = "0";
+                        Cabecera.almace = Almacen.CodigoExterno;
                         Cabecera.pedext = oRead.GetString(0);
                         Cabecera.proext = oRead.GetString(1);
                         Cabecera.fecasi = oRead.GetDateTime(2).ToString("yyyyMMddHHmmss");
@@ -671,7 +672,7 @@ namespace NavLogistica24
                              inner join [{Datos.Company}$Location] ALM on ALM.[Code] = TH.[Transfer-from Code]
                              inner join [{Datos.Company}$Vendor] VE on VE.[No_] = ALM.[Proveedor]
                              where TH.[Transfer-to Code] = '{Almacen.Codigo}'
-                               and TH.[Enviar a InLog] = 1
+                               and TH.[Enviar a Inlog Entrada] = 1
                                and TL.[Nº envases] >0
                             group by TH.[No_], VE.[No_], TH.[Shipment Date]
                             having Count(*) >= 1
@@ -695,7 +696,7 @@ namespace NavLogistica24
 
                         Cabecera = new mOCCabecera();
                         Cabecera.accion = "A";
-                        Cabecera.almace = "0";
+                        Cabecera.almace = Almacen.CodigoExterno;
                         Cabecera.pedext = oRead.GetString(0);
                         Cabecera.proext = oRead.GetString(1);
                         Cabecera.fecasi = oRead.GetDateTime(2).ToString("yyyyMMddHHmmss");
@@ -760,6 +761,7 @@ namespace NavLogistica24
 
                         String Respuesta = await WebServices.OC(Datos, Cabecera, InlogID, Almacen);
 
+                        Actualizar_Transferencia_Entrada(Datos, ref Sqlclass,  Cabecera.pedext);
                         Actualizar_Transferencia(Datos, ref Sqlclass,  Cabecera.pedext);
                         InLog(ref Datos, ref Sqlclass, 8, Cabecera.pedext, 0, Cabecera.proext, Respuesta, InlogID, Almacen.Codigo);
                         Datos.Counter++;
@@ -816,7 +818,7 @@ namespace NavLogistica24
 
                         Cabecera = new mPSCabecera();
                         Cabecera.accion = "A";
-                        Cabecera.almace = "0";
+                        Cabecera.almace = Almacen.CodigoExterno;
                         Cabecera.cliext = oRead.GetString(1);
                         Cabecera.copais = oRead.GetString(11);
                         Cabecera.codpos = oRead.GetString(9);
@@ -925,7 +927,7 @@ namespace NavLogistica24
                              inner join [{Datos.Company}$Customer] CU on CU.[No_] = ALM.[Cliente]
                              Cross join [{Datos.Company}$Sales & Receivables Setup] SSE
                              where TH.[Transfer-from Code] = '{Almacen.Codigo}'
-                               and TH.[Enviar a InLog] = 1
+                               and TH.[Enviar a Inlog Salida] = 1
                                and TL.[Nº envases] >0
                             group by TH.[No_], CU.[No_], TH.[Shipment Date],
                                      TH.[Transfer-to Code], TH.[Transfer-to Name], TH.[Transfer-to Name 2], TH.[Transfer-to Address], TH.[Transfer-to Address 2],
@@ -952,7 +954,7 @@ namespace NavLogistica24
 
                         Cabecera = new mPSCabecera();
                         Cabecera.accion = "A";
-                        Cabecera.almace = "0";
+                        Cabecera.almace = Almacen.CodigoExterno;
                         Cabecera.cliext = oRead.GetString(1);
                         Cabecera.copais = oRead.GetString(11);
                         Cabecera.codpos = oRead.GetString(9);
@@ -1027,6 +1029,7 @@ namespace NavLogistica24
 
                         String Respuesta = await WebServices.PS(Datos, Cabecera, InlogID, Almacen);
 
+                        Actualizar_Transferencia_Salida(Datos, ref Sqlclass, Cabecera.pedext);
                         Actualizar_Transferencia(Datos, ref Sqlclass, Cabecera.pedext);
                         InLog(ref Datos, ref Sqlclass, 9, Cabecera.pedext, 0, Cabecera.pedext, Respuesta, InlogID, Almacen.Codigo);
                         Datos.Counter++;
@@ -1076,7 +1079,7 @@ namespace NavLogistica24
 
                         Cabecera = new mDevProCabecera();
                         Cabecera.accion = "A";
-                        Cabecera.almace = "0";
+                        Cabecera.almace = Almacen.CodigoExterno;
                         Cabecera.codext = oRead.GetString(0);
                         Cabecera.numdoc = oRead.GetString(0);
                         Cabecera.proext = oRead.GetString(1);
@@ -1191,7 +1194,7 @@ namespace NavLogistica24
 
                         Cabecera = new mDevProCabecera();
                         Cabecera.accion = "A";
-                        Cabecera.almace = "0";
+                        Cabecera.almace = Almacen.CodigoExterno;
                         Cabecera.codext = oRead.GetString(0);
                         Cabecera.numdoc = oRead.GetString(0);
                         Cabecera.proext = oRead.GetString(1);
@@ -1340,7 +1343,20 @@ namespace NavLogistica24
 
         private void Actualizar_Transferencia(mDatos Datos, ref Sql Sqlclass, string xOC)
         {
-            String tt = $@"UPDATE [{Datos.Company}$Transfer Header] SET [Enviar a InLog] = 0 where [No_] = '{xOC}'";
+            String tt = $@"UPDATE [{Datos.Company}$Transfer Header] SET [Enviar a InLog] = 0 where [No_] = '{xOC}' AND [Enviar a Inlog Entrada] = 0 AND [Enviar a Inlog Salida] = 0";
+
+            bool Dummy = Sqlclass.Ejecutar_SQL(ref Datos, tt);
+        }
+
+        private void Actualizar_Transferencia_Entrada(mDatos Datos, ref Sql Sqlclass, string xOC)
+        {
+            String tt = $@"UPDATE [{Datos.Company}$Transfer Header] SET [Enviar a Inlog Entrada] = 0 where [No_] = '{xOC}'";
+
+            bool Dummy = Sqlclass.Ejecutar_SQL(ref Datos, tt);
+        }
+        private void Actualizar_Transferencia_Salida(mDatos Datos, ref Sql Sqlclass, string xOC)
+        {
+            String tt = $@"UPDATE [{Datos.Company}$Transfer Header] SET [Enviar a Inlog Salida] = 0 where [No_] = '{xOC}'";
 
             bool Dummy = Sqlclass.Ejecutar_SQL(ref Datos, tt);
         }

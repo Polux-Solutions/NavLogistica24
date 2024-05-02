@@ -10,6 +10,6 @@ namespace NavLogistica24.Modelos
     {
         public String Codigo { get; set; }
         public String URL { get; set; }
-
+        public String CodigoExterno { get; set; }
     }
 }

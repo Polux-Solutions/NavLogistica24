@@ -5,7 +5,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <BaseOutputPath>C:\Navision\NavLogistica\Bin</BaseOutputPath>
+    <BaseOutputPath>C:\Navision\NavLogistica24\Bin</BaseOutputPath>
   </PropertyGroup>
 
   <ItemGroup>

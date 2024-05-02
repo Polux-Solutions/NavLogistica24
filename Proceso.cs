@@ -47,7 +47,7 @@ namespace NavLogistica24
 
             Almacenes = new ObservableCollection<mAlmacenes>();
 
-            tt = $"SELECT [Code], [URL Inlog] FROM [{Datos.Company}$Location] WHERE [URL Inlog] <> ''";
+            tt = $"SELECT [Code], [URL Inlog], [Código Externo] FROM [{Datos.Company}$Location] WHERE [URL Inlog] <> ''";
             sw9 = SqlNav.Crear_Datareader(ref Datos, ref Reader, tt);
             if (sw9) sw9 = Reader.HasRows;
 
@@ -59,6 +59,7 @@ namespace NavLogistica24
 
                     Location.Codigo = Reader.GetString(0);
                     Location.URL = Reader.GetString(1);
+                    Location.CodigoExterno = Reader.GetString(2);
 
                     Almacenes.Add(Location);
                 }
