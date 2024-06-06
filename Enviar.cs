@@ -669,7 +669,7 @@ namespace NavLogistica24
             string tt = $@"select TH.[No_], VE.[No_], TH.[Shipment Date], count(*)
                              from [{Datos.Company}$Transfer Header] TH
                              inner join [{Datos.Company}$Transfer Line] TL on TL.[Document No_] = TH.[No_]
-                             inner join [{Datos.Company}$Location] ALM on ALM.[Code] = TH.[Transfer-from Code]
+                             inner join [{Datos.Company}$Location] ALM on ALM.[Code] = TH.[Transfer-to Code]
                              inner join [{Datos.Company}$Vendor] VE on VE.[No_] = ALM.[Proveedor]
                              where TH.[Transfer-to Code] = '{Almacen.Codigo}'
                                and TH.[Enviar a Inlog Entrada] = 1
@@ -923,7 +923,7 @@ namespace NavLogistica24
                              count(*)
                              from [{Datos.Company}$Transfer Header] TH
                              inner join [{Datos.Company}$Transfer Line] TL on TL.[Document No_] = TH.[No_]
-                             inner join [{Datos.Company}$Location] ALM on ALM.[Code] = TH.[Transfer-to Code]
+                             inner join [{Datos.Company}$Location] ALM on ALM.[Code] = TH.[Transfer-from Code]
                              inner join [{Datos.Company}$Customer] CU on CU.[No_] = ALM.[Cliente]
                              Cross join [{Datos.Company}$Sales & Receivables Setup] SSE
                              where TH.[Transfer-from Code] = '{Almacen.Codigo}'
@@ -1292,7 +1292,7 @@ namespace NavLogistica24
 
             if (OK == 0)
             {
-                tt = @$"DELETE FROM [{Datos.Company}$SGA Log]
+                tt = @$"DELETE FROM [{Datos.Company}$SGA Log 24]
                               WHERE [Tipo] = {xTipo}
                                 AND [Document No_] = '{xDocumentoNo}'
                                 AND CONVERT(date, [Hora modificacion]) = CONVERT(Date, getdate()) 
@@ -1300,7 +1300,7 @@ namespace NavLogistica24
                Dummy = Sqlclass.Ejecutar_SQL(ref Datos, tt);
             }
 
-            tt = $@"INSERT INTO [{Datos.Company}$SGA Log] ([Tipo], [Document No_], [Line No_], [Description], [Inlog ID], [Almacen], [Ok], [Error], [Hora modificacion]) 
+            tt = $@"INSERT INTO [{Datos.Company}$SGA Log 24] ([Tipo], [Document No_], [Line No_], [Description], [Inlog ID], [Almacen], [Ok], [Error], [Hora modificacion]) 
                            Values ({xTipo},'{xDocumentoNo}',{xLineNo},'{xDescription}',{xId}, '{xAlmacen}', {OK}, '{TextoError}', Getdate())";
 
             Dummy = Sqlclass.Ejecutar_SQL(ref Datos, tt);
@@ -1427,7 +1427,7 @@ namespace NavLogistica24
             Int32 Id = 0;
             SqlDataReader oRead = null;
 
-            String tt = $@"SELECT COALESCE(MAX([Inlog ID]),0) FROM [{Datos.Company}$SGA Log]";
+            String tt = $@"SELECT COALESCE(MAX([Inlog ID]),0) FROM [{Datos.Company}$SGA Log 24]";
             bool Abrir = Sqlclass.Crear_Datareader(ref Datos, ref oRead, tt);
 
             if (oRead.Read()) Id = oRead.GetInt32(0);
