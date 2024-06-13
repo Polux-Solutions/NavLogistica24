@@ -305,22 +305,21 @@ namespace NavLogistica24
 
                 foreach (mAlmacenes Almacen in Almacenes)
                 {
-                    foreach (mArticulo Articulo in Articulos)
-                    {
-                        if (Articulo.OK)
+                        foreach (mArticulo Articulo in Articulos)
                         {
-                            Articulo.almace = Almacen.CodigoExterno;
-                            Respuesta = await WebServices.Articulos(Datos, Articulo, InlogID, Almacen);
-                        }
-                        else
-                        {
-                            Respuesta = Articulo.Error;
-                        }
-                        InLog(ref Datos, ref Sqlclass, 1, Articulo.artpro, 0, Articulo.denomi, Respuesta, InlogID, Almacen.Codigo);
+                            if (Articulo.OK)
+                            {
+                                Articulo.almace = Almacen.CodigoExterno;
+                                Respuesta = await WebServices.Articulos(Datos, Articulo, InlogID, Almacen);
+                            }
+                            else
+                            {
+                                Respuesta = Articulo.Error;
+                            }
+                            InLog(ref Datos, ref Sqlclass, 1, Articulo.artpro, 0, Articulo.denomi, Respuesta, InlogID, Almacen.Codigo);
 
-                        if (PrimerAlmacen) Datos.Counter++;
-                    }
-
+                            if (PrimerAlmacen) Datos.Counter++;
+                        }
                     if (PrimerAlmacen) PrimerAlmacen = false;
                 }
             }
@@ -419,21 +418,21 @@ namespace NavLogistica24
 
                 foreach (mAlmacenes Almacen in Almacenes)
                 {
-                    foreach (mCodigoBarras CodBar in CodBars)
-                    {
-                        if (CodBar.OK)
+                        foreach (mCodigoBarras CodBar in CodBars)
                         {
-                            CodBar.almace = Almacen.CodigoExterno;
-                            Respuesta = await WebServices.Codigos_Barras(Datos, CodBar, InlogID, Almacen);
-                        }
-                        else
-                        {
-                            Respuesta = CodBar.Error;
-                        }
-                        InLog(ref Datos, ref Sqlclass, 2, CodBar.artpro, 0, CodBar.codbar, Respuesta, InlogID, Almacen.Codigo);
+                            if (CodBar.OK)
+                            {
+                                CodBar.almace = Almacen.CodigoExterno;
+                                Respuesta = await WebServices.Codigos_Barras(Datos, CodBar, InlogID, Almacen);
+                            }
+                            else
+                            {
+                                Respuesta = CodBar.Error;
+                            }
+                            InLog(ref Datos, ref Sqlclass, 2, CodBar.artpro, 0, CodBar.codbar, Respuesta, InlogID, Almacen.Codigo);
 
-                        if (PrimerAlmacen) Datos.Counter++;
-                    }
+                            if (PrimerAlmacen) Datos.Counter++;
+                        }
 
                     if (PrimerAlmacen) PrimerAlmacen = false;
                 }
@@ -669,10 +668,10 @@ namespace NavLogistica24
             string tt = $@"select TH.[No_], VE.[No_], TH.[Shipment Date], count(*)
                              from [{Datos.Company}$Transfer Header] TH
                              inner join [{Datos.Company}$Transfer Line] TL on TL.[Document No_] = TH.[No_]
-                             inner join [{Datos.Company}$Location] ALM on ALM.[Code] = TH.[Transfer-to Code]
+                             inner join [{Datos.Company}$Location] ALM on ALM.[Code] = TH.[Transfer-from Code]
                              inner join [{Datos.Company}$Vendor] VE on VE.[No_] = ALM.[Proveedor]
                              where TH.[Transfer-to Code] = '{Almacen.Codigo}'
-                               and TH.[Enviar a Inlog Entrada] = 1
+                               and TH.[Enviar a Inlog Entrada] = 1 
                                and TL.[Nº envases] >0
                             group by TH.[No_], VE.[No_], TH.[Shipment Date]
                             having Count(*) >= 1
@@ -923,7 +922,7 @@ namespace NavLogistica24
                              count(*)
                              from [{Datos.Company}$Transfer Header] TH
                              inner join [{Datos.Company}$Transfer Line] TL on TL.[Document No_] = TH.[No_]
-                             inner join [{Datos.Company}$Location] ALM on ALM.[Code] = TH.[Transfer-from Code]
+                             inner join [{Datos.Company}$Location] ALM on ALM.[Code] = TH.[Transfer-to Code]
                              inner join [{Datos.Company}$Customer] CU on CU.[No_] = ALM.[Cliente]
                              Cross join [{Datos.Company}$Sales & Receivables Setup] SSE
                              where TH.[Transfer-from Code] = '{Almacen.Codigo}'
@@ -980,7 +979,7 @@ namespace NavLogistica24
                         if (Cabecera.codpos == "") Cabecera.codpos = "00000";
                         if (Cabecera.codpos.Length > 7) Cabecera.codpos = Cabecera.codpos.Substring(0, 7);
                         if (string.IsNullOrEmpty(Cabecera.codpos)) Cabecera.codpos = "00000";
-                        if (oRead.GetString(12) == oRead.GetString(3)) Cabecera.lotsec = "ECOMMERCE";
+                        //if (oRead.GetString(12) == oRead.GetString(3)) Cabecera.lotsec = "ECOMMERCE";
 
                         string tt2 = $@"select TL.[Line No_], TL.[Item No_], TL.[Nº envases], TL.[Unit of Measure Code]
                                      from [{Datos.Company}$Transfer Line] TL 
